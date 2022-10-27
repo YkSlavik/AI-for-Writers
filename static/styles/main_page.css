@@ -12,6 +12,7 @@
     border-style: solid;
     border-color: black;
     padding: 1em;
+    position: relative;
 }
 
 .text_container {
@@ -20,11 +21,65 @@
     float: right;
     text-align: left;
     padding: 1em;
+    border-width: 1px;
+    border-style: solid;
+    border-color: black;
+    position: relative;
 }
 
-.text_high1 {
+.outline_tip {
     background-color:aqua;
+    position: relative;
 }
+
+.outline_tip:before {
+    content: attr(data-hover);
+    visibility: hidden;
+    opacity: 0;
+    width: max-content;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px 5px;
+    transition: opacity 1s ease-in-out;
+    position: absolute;
+    z-index: 1;
+    left: 1;
+    top: 110%;
+}
+
+.outline_tip:hover:before {
+    opacity: 1;
+    visibility: visible;
+  }
+
+.text_tip {
+    background-color:aqua;
+    position: relative;
+}
+
+.text_tip:before {
+    content: attr(data-hover);
+    visibility: hidden;
+    opacity: 0;
+    width: max-content;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px 5px;
+    transition: opacity 1s ease-in-out;
+    position: absolute;
+    z-index: 1;
+    left: 1;
+    top: 110%;
+}
+
+.text_tip:hover:before {
+    opacity: 1;
+    visibility: visible;
+  }
 
 .err {
     color: red;
