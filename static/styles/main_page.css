@@ -5,18 +5,28 @@
 
 .outline_container {
     display: block;
-    width: 50%;
+    width: 45%;
     float: left;
-    text-align: center;
+    text-align: left;
+    border-width: 1px;
+    border-style: solid;
+    border-color: black;
+    padding: 1em;
 }
 
 .text_container {
     display: block;
     width: 50%;
     float: right;
-    text-align: center;
+    text-align: left;
+    padding: 1em;
 }
 
-.outline_textarea {
-    
+.text_high1 {
+    background-color:aqua;
+}
+
+.err {
+    color: red;
+    font-weight: bold;
 }
