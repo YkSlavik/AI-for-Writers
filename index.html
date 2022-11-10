@@ -115,7 +115,8 @@
             const response = await fetch("http://127.0.0.1:8000/item");
             const data = await response.json();
             console.log(JSON.stringify(data, undefined, 2));
-            document.getElementById("new-section").innerHTML = JSON.stringify(data, undefined, 2);
+            document.getElementById("new-section").innerHTML = JSON.stringify(data, undefined, 2).slice(1,-1);
+
 
             // JSON version
             // const response = await fetch("http://127.0.0.1:8000/item");
