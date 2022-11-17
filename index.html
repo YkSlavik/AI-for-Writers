@@ -48,20 +48,12 @@
                 exchange for a new sense of life, love, and spirit.</span>
             <br>
             <br>
-            <span id="new-section">
 
             
             <span> My mother's enthusiasm for learning is most apparent in travel. Despite the fact that we were
                 traveling with fourteen-month-old twins, we managed to be at each ruin when the site opened at
                 sunrise.</span>
-            <span class="text_tip" id="span-1">I vividly remember standing in
-                an empty amphitheatre pretending to be an ancient tragedian, picking out my favorite sculpture in the
-                Acropolis museum, and inserting our family into modified tales of the battle at Troy.</span> <span id="span-2">I was
-                nine years old when my family visited Greece.</span>
-            <span id="span-"3>Every night for three weeks before the trip, my older brother Peter and I sat with my mother on her
-                bed reading Greek myths and taking notes on the Greek Gods. </span><span id="span-4" class="text_tip popup" onclick="showPopup()" >Eight years and half a dozen passport stamps later
-                I have come to value what I have learned on these journeys about global history, politics and culture,
-                as well as my family and myself.<span id="popup_id" class="popup_text" onclick="makeChanges()">This sentence could be moved after: "I vividly remember standing in an empty amphitheatre pretending to be an ancient tragedian, picking out my favorite sculpture in the Acropolis museum, and inserting our family into modified tales of the battle at Troy." Would you like to apply the suggestion?</span></span>
+            <span class="text_tip" id="span-0">I vividly remember standing in an empty amphitheatre pretending to be an ancient tragedian, picking out my favorite sculpture in the Acropolis museum, and inserting our family into modified tales of the battle at Troy.</span> <span id="span-1">I was nine years old when my family visited Greece. </span><span id="span-2">Every night for three weeks before the trip, my older brother Peter and I sat with my mother on her bed reading Greek myths and taking notes on the Greek Gods. </span><span id="span-3" class="text_tip popup" onclick="showPopup()" >Eight years and half a dozen passport stamps later I have come to value what I have learned on these journeys about global history, politics and culture, as well as my family and myself. <span id="popup_id" class="popup_text" onclick="makeChanges()">This sentence could be moved after: "I vividly remember standing in an empty amphitheatre pretending to be an ancient tragedian, picking out my favorite sculpture in the Acropolis museum, and inserting our family into modified tales of the battle at Troy." Would you like to apply the suggestion?</span>
             </span>
 
             <br>
@@ -112,19 +104,33 @@
 
         makeChanges = async () => {
             // Change HTML section with received data
+            console.log("received");
             const response = await fetch("http://127.0.0.1:8000/item");
             const data = await response.json();
-            console.log(JSON.stringify(data, undefined, 2));
-            document.getElementById("new-section").innerHTML = JSON.stringify(data, undefined, 2).slice(1,-1);
-
-
-            // JSON version
-            // const response = await fetch("http://127.0.0.1:8000/item");
-            // const data = await response.json();
-            // console.log(JSON.stringify(data, undefined, 2));
-            // return data;
+            // console.log(data);
+            assessFix(data);
         }
 
+        assessFix = (data) => {
+            for (let i = 0; i < data.length; i++) {
+                const span_id = "span-" + i;
+                for (let j = 0; j < data.length; j++) {
+                    const new_index = data[j]["new-order"];
+                    if (new_index == i) {
+                        const curr_span = document.getElementById(span_id);
+                        curr_span.insertAdjacentHTML(
+                            "afterend",
+                            `<span class="${span_id}">${data[j]['text']}</span>`,
+                        );
+                        curr_span.remove();
+                        curr_span.classList.remove("text_tip");
+                        curr_span.classList.remove("popup");
+                        curr_span.classList.remove("popup_text");
+
+                    }
+                }                
+            }
+        }
             
     </script>
 </body>
