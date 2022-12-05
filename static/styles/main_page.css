@@ -93,7 +93,19 @@
     to {opacity:1 ;}
   }
 
+  
 .err {
     color: red;
     font-weight: bold;
 }
+
+.HoverClass1:hover {
+  color: #FFFFFF !important; 
+  background-color: #f59b42 !important;
+}
+
+.highlight {
+  color: #FFFFFF !important; 
+  background-color: #f59b42 !important;
+}
+
