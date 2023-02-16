@@ -5,9 +5,7 @@
 <head>
     <meta charset="utf-8">
     <title>AI for Writers</title>
-    <link rel="stylesheet" href="./static/styles/main_page.css" type="text/css">
-    <link rel="shortcut icon" href="#">
-
+    <link rel="stylesheet" href="/styles/main_page.css" type="text/css">
 </head>
 
 <body>
@@ -51,12 +49,13 @@
             <br>
             <br>
             <button class="rev" onclick="makeMatches()">Find Matches</button>
+            <button class="rev" onclick="getLogProbs()">Find Logprobs</button>
 
         </div>
 
         <div class="text_container">
             <h2>Text</h2>
-            <span id="span-0">It took me eighteen years to realize what an extraordinary influence my mother has been on my
+            <span id="span-0 highlight-on-hover">It took me eighteen years to realize what an extraordinary influence my mother has been on my
                 life.</span><span id="span-1"> She's the kind of person who has thoughtful discussions about which artist she would
                 most want to have her portrait painted by (Sargent), the kind of mother who always has time for her four
                 children, and the kind of community leader who has a seat on the board of every major project to assist
@@ -128,6 +127,30 @@
             const response = await fetch("http://127.0.0.1:8000/item/match");
             const data = await response.json();
             colorMatches(data);
+        }
+
+        getLogProbs = async () => {
+            const response = await fetch("http://127.0.0.1:8000/item/logprobs");
+            const data = await response.json();
+            console.log(data);
+            findBestPlace(data);
+        }
+
+        findBestPlace = (data) => {
+            // find index of the number closest to 0
+            let closestIndex = 0;
+            for (let i = 1; i < data.length; i++) {
+              if (Math.abs(data[i]) < Math.abs(data[closestIndex])) {
+                closestIndex = i;
+              }
+            }
+            const span = document.getElementById("highlight-on-hover");
+            console.log(span.innerHTML);
+            span.classList.add("highlight-span");
+            
+
+            
+
         }
 
         colorMatches = (data) => {

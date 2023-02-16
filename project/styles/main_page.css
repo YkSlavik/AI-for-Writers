@@ -109,3 +109,8 @@
   background-color: #f59b42 !important;
 }
 
+
+.highlight-span {
+  background-color: yellow;
+  color: black;
+}
