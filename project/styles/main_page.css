@@ -114,3 +114,17 @@
   background-color: yellow;
   color: black;
 }
+
+
+/* Comment styling */
+.outline-comment-container {
+  border:#555 1px solid;
+  padding: 5px;
+}
+
+.text-comment-container {
+  border:#555 1px solid;
+  padding: 5px;
+
+}
+
