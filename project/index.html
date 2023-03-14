@@ -94,6 +94,8 @@
                 </div>
             </div>
 
+
+
         </div>
 
 
@@ -109,7 +111,7 @@
                 const lowestIndexes = getHighestIndexes(data);
                 document.querySelector(".text-comment-container").innerHTML = "Consider moving 'It took me eighteen years to realize what an extraordinary influence my mother has been on my life.' sentence to the following place:"
                 let comment_content = document.querySelector(".text-comment-container");
-
+                console.log(lowestIndexes);
                 for (let i = 0; i < lowestIndexes.length; i++) {
                     const n_before = (lowestIndexes[i]-1).toString();
                     const n_after = (lowestIndexes[i]+1).toString();
@@ -117,6 +119,39 @@
                     const sen_after = document.querySelector("#span-" + n_after).innerHTML;
                     comment_content.innerHTML = comment_content.innerHTML + "<br>" + (i+1).toString() + ". After '" + sen_before + "' and before '" + sen_after + "'.<br>";
                 }
+                
+                // Highlighting sentence on click
+                index = "0";
+                const highlighting_sen = document.getElementById("span-" + index);
+                console.log(highlighting_sen.innerHTML);
+                highlighting_sen.addEventListener("click", function() {
+                    highlighting_sen.classList.toggle("highlighted");
+                    // Create span with empty spaces where the current sentence can move
+                    for (let i = 0; i < lowestIndexes.length; i++) {
+                        // Create a span
+                        const temp_span = document.createElement("span");
+                        temp_span.setAttribute("class", "option");
+                        temp_span.style.backgroundColor = "green";
+                        temp_span.innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;";
+                        // Change content of empty span
+                        temp_span.addEventListener("click", function() {
+                            temp_span.style.backgroundColor = "white";
+                            temp_span.innerHTML = highlighting_sen.innerHTML;
+                            temp_span.classList.remove("option");
+                            // Remove initial span of interest
+                            highlighting_sen.remove();
+                            const options = document.getElementsByClassName("option");
+                            
+                            // Remove remaining spans that were not chosen by the user
+                            while (options.length > 0) {
+                                console.log("HEEE");
+                                options[0].remove();
+                            }
+                        });
+                        const option = document.getElementById("span-" + lowestIndexes[i].toString()).insertAdjacentElement("beforeend", temp_span);
+
+                    }
+                });
                 
             }
 
