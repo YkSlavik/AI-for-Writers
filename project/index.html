@@ -181,7 +181,7 @@
                 console.log(data[0]);
                 for (let j = 0; j < data.length; j++) {
                     const outline_par = "outline-" + j;
-                    const indices_of_max = findIndicesOfMax(data[j], 3);
+                    const indices_of_max = findIndicesOfMin(data[j], 3);
                     document.getElementById(outline_par).onmouseover = function () {
                         document.getElementById(outline_par).style.backgroundColor = "#f59b42";
                         for (let i = 0; i < indices_of_max.length; i++) {
@@ -201,17 +201,18 @@
             }
 
             // https://stackoverflow.com/questions/11792158/optimized-javascript-code-to-find-3-largest-element-and-its-indexes-in-array
-            function findIndicesOfMax(inp, count) {
+            function findIndicesOfMin(inp, count) {
                 var outp = [];
                 for (var i = 0; i < inp.length; i++) {
                     outp.push(i); // add index to output array
-                    if (outp.length > count) {
-                        outp.sort(function (a, b) { return inp[b] - inp[a]; }); // descending sort the output array
-                        outp.pop(); // remove the last index (index of smallest element in output array)
+                    if (outp.length >= count) {
+                        outp.sort(function (a, b) { return inp[a] - inp[b]; }); // ascending sort the output array
+                        outp.pop(); // remove the last index (index of largest element in output array)
                     }
                 }
                 return outp;
             }
+
 
 
             makeChanges = async () => {
