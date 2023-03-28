@@ -51,7 +51,9 @@
             <button class="rev" onclick="getLogProbs()">Find Logprobs</button>
 
             <br>
-            <br>
+            <button class="rev" onclick="makeMatches()">Find Matches</button>
+
+
             <div class="outline-comment-container">
                 Comment section
             </div>
@@ -167,6 +169,12 @@
                 }
 
                 return indexes;
+            }
+
+            makeMatches = async () => {
+                const response = await fetch("http://127.0.0.1:8000/item/match");
+                const data = await response.json();
+                colorMatches(data);
             }
 
             colorMatches = (data) => {
