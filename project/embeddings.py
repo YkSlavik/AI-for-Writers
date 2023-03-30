@@ -17,7 +17,6 @@ import pickle
 import os
 import openai
 openai.organization = "org-9bUDqwqHW2Peg4u47Psf9uUo"
-openai.api_key = "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"
 openai.Model.list()
 
 # %%
