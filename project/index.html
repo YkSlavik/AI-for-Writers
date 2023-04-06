@@ -10,15 +10,12 @@
 
 <body>
     <div class="main_container">
-        <div class="outline_container">
+        <!-- <div class="outline_container">
             <h2>Outline</h2>
             <span id="outline-0">First par</span>
             <br>
             <br>
             <span id="outline-1">Second par</span>
-            <!-- <p><span class="outline_tip" data-hover="Are you sure about that?">Learning through travel by -->
-            <!-- using the example of a trip to Greece.</span> -->
-            <!-- </p> -->
             <br>
             <br>
             <span id="outline-2">Third par
@@ -30,14 +27,14 @@
             <br>
             <span id="outline-4">Fifth par</span>
             <button class="rev" onclick="getLogProbs()">Find Logprobs</button>
-
             <br>
             <button class="rev" onclick="makeMatches()">Find Matches</button>
+        </div> -->
 
-
-            <div class="outline-comment-container">
-                Comment section
-            </div>
+        <div class="textarea_container outline_container">
+            <h2 id="textarea-title">Write your outline here</h2>
+            <textarea name="" id="" cols="30" rows="10"></textarea>
+            <button onclick="convertTextareaToSpans()">Analyze</button>
         </div>
 
         <div class="text_container" id="essay_text_id">
@@ -74,10 +71,57 @@
         </div>
 
         <script>
+            // Declare global_data variable that will be received from the server
+            let global_data;
+            function convertTextareaToSpans() {
+                document.querySelector('#textarea-title').innerHTML = "Outline";
+                // Get the textarea element and its value
+                const textarea = document.querySelector('textarea');
+                const content = textarea.value.split('\n');
+                            
+                const parentDiv = document.createElement("div");
+
+                for (let i = 0; i < content.length; i++) {
+                    const span = document.createElement("span");
+                    span.innerHTML = content[i];
+                    span.setAttribute("id", "outline-" + i);
+                    parentDiv.appendChild(span);
+
+                    if (i < content.length - 1) {
+                        parentDiv.appendChild(document.createElement("br"));
+                        parentDiv.appendChild(document.createElement("br"));
+                    }
+                }
+                textarea.parentNode.replaceChild(parentDiv, textarea);
+            
+
+                // Send a POST request to the server with the data
+                const payload = {
+                    "outline": textarea.value
+                };
+                
+                fetch('http://127.0.0.1:8000/analyze', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(payload)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    global_data = data;
+                    colorMatches(data[0]);
+                    resetChooseSentenceAttribute();
+                })
+                .catch(error => console.error(error));                
+            }
+
+
             document.addEventListener('DOMContentLoaded', function() {
                 resetSpanIds();
             });
-            
+
             function resetSpanIds() {
                 // Give unique IDs to all the spans of the text
                 // Get the div element by its ID
@@ -103,26 +147,25 @@
                 }     
             }
 
-            getLogProbs = async () => {
-                const response = await fetch("http://127.0.0.1:8000/item/logprobs");
-                data = await response.json();
-                console.log("got data: ", data);
-                document.querySelector(".text-comment-container").innerHTML = "Consider moving 'It took me eighteen years to realize what an extraordinary influence my mother has been on my life.' sentence to the following place:"
-                let comment_content = document.querySelector(".text-comment-container");
-                // for (let i = 0; i < highestIndexes.length; i++) {
-                //     const n_before = (highestIndexes[i]-1).toString();
-                //     const n_after = (highestIndexes[i]+1).toString();
-                //     const sen_before =  document.querySelector("#span-"+ n_before).innerHTML;
-                //     const sen_after = document.querySelector("#span-" + n_after).innerHTML;
-                //     comment_content.innerHTML = comment_content.innerHTML + "<br>" + (i+1).toString() + ". After '" + sen_before + "' and before '" + sen_after + "'.<br>";
-                // }
+            // getLogProbs = async () => {
+            //     const response = await fetch("http://127.0.0.1:8000/item/logprobs");
+            //     data = await response.json();
+            //     console.log("got data: ", data);
+            //     document.querySelector(".text-comment-container").innerHTML = "Consider moving 'It took me eighteen years to realize what an extraordinary influence my mother has been on my life.' sentence to the following place:"
+            //     let comment_content = document.querySelector(".text-comment-container");
+            //     // for (let i = 0; i < highestIndexes.length; i++) {
+            //     //     const n_before = (highestIndexes[i]-1).toString();
+            //     //     const n_after = (highestIndexes[i]+1).toString();
+            //     //     const sen_before =  document.querySelector("#span-"+ n_before).innerHTML;
+            //     //     const sen_after = document.querySelector("#span-" + n_after).innerHTML;
+            //     //     comment_content.innerHTML = comment_content.innerHTML + "<br>" + (i+1).toString() + ". After '" + sen_before + "' and before '" + sen_after + "'.<br>";
+            //     // }
                 
-                resetChooseSentenceAttribute();
-            }
+            //     resetChooseSentenceAttribute();
+            // }
 
             // Define the getSpanId function to handle the click event
             function chooseSentence() {
-                console.log("DATA: ", data);
                 var span_id = event.target.id; // Get the ID of the clicked span
                 
                 // Highlighting sentence on click
@@ -135,7 +178,7 @@
                 num = match ? parseInt(match[1], 10) : null; // extracts the number and returns it as a parsed integer
 
                 // Get highest indexes of logprobs
-                highest_indexes = getHighestIndexes(data[num], 3);
+                highest_indexes = getHighestIndexes(global_data[1][num], 3);
 
                 // Create span with empty spaces where the current sentence can move
                 for (let i = 0; i < highest_indexes.length; i++) {
@@ -183,16 +226,8 @@
                                 });
                             }
                         });
-
                     }
-
-                    
-
-
                 }
-
-
-
             }
 
 

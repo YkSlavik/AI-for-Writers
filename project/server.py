@@ -14,6 +14,8 @@ import os
 # os.system('pip install scipy')
 # os.system('pip install sklearn')
 # os.system('pip install scikit-learn')
+# os.system('pip install -U spacy')
+
 
 # load environment variables
 import dotenv
@@ -33,8 +35,12 @@ from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware 
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
-import json
+from pydantic import BaseModel
+import re
+import spacy
+# spacy.cli.download("en_core_web_sm")
 
+nlp = spacy.load("en_core_web_sm")
 
 dotenv.load_dotenv()
 openai.organization = "org-9bUDqwqHW2Peg4u47Psf9uUo"
@@ -126,11 +132,11 @@ distances
 
 question_w_outline = '''
 Write a short essay given this outline:
-• First par
-• Second par
-• Third par
-• Fourth par
-• Fifth par
+• First paragraph.
+• Second paragraph.
+• Third paragraph.
+• Fourth paragraph.
+• Fifth paragraph.
 
 '''
 
@@ -289,6 +295,28 @@ def allLogProbs(res):
 all_logprobs = allLogProbs(res)
 print("ALL LOGPROBS: ", all_logprobs)
 
+
+def create_prompt(outline_sections):
+    # join the paragraphs into a single string, separated by newlines
+    essay = '\n'.join(outline_sections)
+
+    # split the essay into a list of sentences
+    sentences = essay.split('. ')
+
+    # join the sentences back into a single string, with each sentence on a new line and
+    # prepended with a bullet point
+    outline = 'Write a short essay given this outline:\n'
+    for i, sentence in enumerate(sentences):
+        if sentence:
+            outline += f'• {sentence.strip()}.'
+            if i < len(sentences) - 1:
+                outline += '\n'
+
+    outline += '\n'  # add a newline character at the end
+    return outline
+
+
+
 # HOST WEB
 
 app = FastAPI() 
@@ -326,7 +354,59 @@ async def read_items():
     data = (all_logprobs)
     return data
 
+# Receive data
+# Define the payload schema
+class TextPayload(BaseModel):
+    outline: str
+
+@app.post("/analyze")
+async def analyze_post_request(payload: TextPayload):
+    # Do something with the received data
     
+    doc = nlp(payload.outline)
+    outline_sections = [sentence.text.strip() for sentence in doc.sents]
+
+    print("outline sents:")
+    print(outline_sections)
+
+    # HARDCORED TEXT
+    texts = [
+    "Meet Jack.",
+    "He's a driven and ambitious individual with a laser-focused mindset on achieving his goals.",
+    "With a keen eye for detail, he excels in problem-solving and is always seeking new challenges to test his abilities.",
+    "Jack is a natural leader, with the ability to inspire and motivate others to perform at their best.",
+    "Despite his demanding schedule, he always makes time for his family and friends, valuing the importance of maintaining strong relationships."
+    ]
+
+    distances = get_distances_from_query_list(outline_sections, texts)
+
+    # Create prompt
+    questions_w_outline = create_prompt(outline_sections)
+
+    sentences = [
+        "Meet Jack.",
+        "He's a driven and ambitious individual with a laser-focused mindset on achieving his goals.",
+        "With a keen eye for detail, he excels in problem-solving and is always seeking new challenges to test his abilities.",
+        "Jack is a natural leader, with the ability to inspire and motivate others to perform at their best.",
+        "Despite his demanding schedule, he always makes time for his family and friends, valuing the importance of maintaining strong relationships."
+    ]
+
+    original_text = ' '.join(sentences)
+    
+    full_request = question_w_outline + original_text
+
+    request = full_request_template(question_w_outline, sentences)
+
+    res = all_the_log_probs(sentences)
+
+    all_logprobs = allLogProbs(res)
+
+    return (distances, all_logprobs)
+
+
+
+
+
 @app.get("/item")
 async def read_items():
     # data = "My mother's enthusiasm for learning is most apparent in travel. Despite the fact that we were traveling with fourteen-month-old twins, we managed to be at each ruin when the site opened at sunrise. I vividly remember standing in an empty amphitheatre pretending to be an ancient tragedian, picking out my favorite sculpture in the Acropolis museum, and inserting our family into modified tales of the battle at Troy. I was nine years old when my family visited Greece. Every night for three weeks before the trip, my older brother Peter and I sat with my mother on her bed reading Greek myths and taking notes on the Greek Gods. Eight years and half a dozen passport stamps later I have come to value what I have learned on these journes about global history, politics and culture, as well as my family and myself."
