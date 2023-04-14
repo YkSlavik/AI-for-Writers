@@ -194,21 +194,15 @@ def all_the_log_probs(sentences):
 res = all_the_log_probs(sentences)
 
 def compute_log_probs(question_w_outline, original_text, response):
-    # 1. Start point: text offset of the first word from our original essay
-    start_point = len(question_w_outline)   
-    # 2. Start index
+    start_point = len(question_w_outline)
     start_index = response.choices[0].logprobs.text_offset.index(start_point)
-    # 3. Length of the original text
-    len_original_text = len(original_text)    
-    # 4. End point = Start point + Length of the original text
+    len_original_text = len(original_text)
     end_point = start_point + len_original_text - 1
-    # 5. end index
-    end_index = response.choices[0].logprobs.text_offset.index(end_point)
-    # total logprobs
+    end_index = min(range(len(response.choices[0].logprobs.text_offset)), key=lambda i: abs(response.choices[0].logprobs.text_offset[i] - end_point))
     total = 0
     for x in range(start_index, end_index + 1):
         total = total + response.choices[0].logprobs.token_logprobs[x]
-    return total    
+    return total
 
 # compute_log_probs(question_w_outline, original_text, result[0])
 
