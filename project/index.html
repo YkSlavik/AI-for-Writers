@@ -10,34 +10,26 @@
 
 <body>
     <div class="main_container">
-        <!-- <div class="outline_container">
-            <h2>Outline</h2>
-            <span id="outline-0">First par</span>
-            <br>
-            <br>
-            <span id="outline-1">Second par</span>
-            <br>
-            <br>
-            <span id="outline-2">Third par
-            </span>
-            <br>
-            <br>
-            <span id="outline-3">Fourth par</span>
-            <br>
-            <br>
-            <span id="outline-4">Fifth par</span>
-            <button class="rev" onclick="getLogProbs()">Find Logprobs</button>
-            <br>
-            <button class="rev" onclick="makeMatches()">Find Matches</button>
-        </div> -->
-
-        <div class="textarea_container outline_container">
-            <h2 id="textarea-title">Write your outline here</h2>
-            <textarea name="" id="" cols="30" rows="10"></textarea>
-            <button onclick="convertTextareaToSpans()">Analyze</button>
+        <div class="analyze_button_container">
+            <button class="button-87" onclick="convertTextareaToSpans()">Analyze</button>
         </div>
 
-        <div class="text_container" id="essay_text_id">
+        <div class="outline_container">
+            <h2 id="outline-title">Your outline</h2>
+            <textarea id="outline-textarea" name="" id="" cols="63" rows="10"></textarea>
+            <br>
+        </div>
+
+        <div class="essay_container" id="essay_text_id">
+            <h2 id="essay-title">Your essay</h2>
+            <textarea id="essay-textarea" name="" id="" cols="140" rows="30"></textarea>
+        </div>
+
+        <br>
+        <br>
+
+
+        <!-- <div class="essay_container" id="essay_text_id">
             <h2>Text</h2>
             <span class="popup-trigger">Meet Jack.</span>
             <br>
@@ -55,10 +47,8 @@
             <br>
             <br>
 
-            <div class="text-comment-container">
-                Comment section
-            </div>
-        </div>
+
+        </div> -->
 
 
 
@@ -74,30 +64,40 @@
             // Declare global_data variable that will be received from the server
             let global_data;
             function convertTextareaToSpans() {
-                document.querySelector('#textarea-title').innerHTML = "Outline";
+                document.querySelector('#outline-title').innerHTML = "Outline";
+                document.querySelector('#essay-title').innerHTML = "Essay";
                 // Get the textarea element and its value
-                const textarea = document.querySelector('textarea');
-                const content = textarea.value.split('\n');
-                            
-                const parentDiv = document.createElement("div");
+                const outline_textarea = document.querySelector('#outline-textarea');
+                const outline_textarea_content = outline_textarea.value.split('\n');
+                const essay_textarea = document.querySelector('#essay-textarea');
+                const essay_textarea_content = essay_textarea.value;
+                const essay_sentences_html = convertTextareaToHTML(essay_textarea_content);
 
-                for (let i = 0; i < content.length; i++) {
+                const outline_parent_div = document.createElement("div");
+                const essay_parent_div = document.createElement("div");
+                essay_parent_div.innerHTML = essay_sentences_html;
+
+                for (let i = 0; i < outline_textarea_content.length; i++) {
                     const span = document.createElement("span");
-                    span.innerHTML = content[i];
+                    span.innerHTML = outline_textarea_content[i];
                     span.setAttribute("id", "outline-" + i);
-                    parentDiv.appendChild(span);
+                    outline_parent_div.appendChild(span);
 
-                    if (i < content.length - 1) {
-                        parentDiv.appendChild(document.createElement("br"));
-                        parentDiv.appendChild(document.createElement("br"));
+                    if (i < outline_textarea_content.length - 1) {
+                        outline_parent_div.appendChild(document.createElement("br"));
+                        outline_parent_div.appendChild(document.createElement("br"));
                     }
                 }
-                textarea.parentNode.replaceChild(parentDiv, textarea);
+                
+                outline_textarea.parentNode.replaceChild(outline_parent_div, outline_textarea);
+                essay_textarea.parentNode.replaceChild(essay_parent_div, essay_textarea);
             
+
 
                 // Send a POST request to the server with the data
                 const payload = {
-                    "outline": textarea.value
+                    "outline": outline_textarea.value,
+                    "essay": essay_textarea.value
                 };
                 
                 fetch('http://127.0.0.1:8000/analyze', {
@@ -121,6 +121,37 @@
             document.addEventListener('DOMContentLoaded', function() {
                 resetSpanIds();
             });
+
+            function convertTextareaToHTML(text) {
+                // Split the text into sentences
+                const sentences = text.split(/(?<=[.?!])\s/g);
+
+                // Create an array of span elements with each sentence
+                const spans = sentences.map((sentence, index) => {
+                    // Check if the sentence ends with a period
+                    const endsWithPeriod = /\.$/.test(sentence);
+                    return `<span id="span-${index}">${sentence.trim()}</span>`;
+                });
+
+
+                // Join the spans with br elements, but only if the original sentence had a new line
+                const html = spans.reduce((acc, span, index) => {
+                  const previousSentence = sentences[index - 1];
+                  const hasNewLine = previousSentence && /\r?\n/.test(previousSentence);
+                
+                  if (hasNewLine) {
+                    acc += '<br>\n<br>\n';
+                  } else if (index > 0) {
+                    acc += ' ';
+                  }
+                
+                  acc += span;
+                  return acc;
+                }, '');
+              
+                // Wrap the result in a div with the class "popup-content"
+                return html;
+            }
 
             function resetSpanIds() {
                 // Give unique IDs to all the spans of the text
@@ -147,30 +178,12 @@
                 }     
             }
 
-            // getLogProbs = async () => {
-            //     const response = await fetch("http://127.0.0.1:8000/item/logprobs");
-            //     data = await response.json();
-            //     console.log("got data: ", data);
-            //     document.querySelector(".text-comment-container").innerHTML = "Consider moving 'It took me eighteen years to realize what an extraordinary influence my mother has been on my life.' sentence to the following place:"
-            //     let comment_content = document.querySelector(".text-comment-container");
-            //     // for (let i = 0; i < highestIndexes.length; i++) {
-            //     //     const n_before = (highestIndexes[i]-1).toString();
-            //     //     const n_after = (highestIndexes[i]+1).toString();
-            //     //     const sen_before =  document.querySelector("#span-"+ n_before).innerHTML;
-            //     //     const sen_after = document.querySelector("#span-" + n_after).innerHTML;
-            //     //     comment_content.innerHTML = comment_content.innerHTML + "<br>" + (i+1).toString() + ". After '" + sen_before + "' and before '" + sen_after + "'.<br>";
-            //     // }
-                
-            //     resetChooseSentenceAttribute();
-            // }
-
             // Define the getSpanId function to handle the click event
             function chooseSentence() {
                 var span_id = event.target.id; // Get the ID of the clicked span
                 
                 // Highlighting sentence on click
                 const highlighting_sen = document.getElementById(span_id);
-                // console.log(highlighting_sen.innerHTML);
                 highlighting_sen.classList.toggle("highlighted");
 
                 // Extract number from the id of a span
@@ -178,17 +191,39 @@
                 num = match ? parseInt(match[1], 10) : null; // extracts the number and returns it as a parsed integer
 
                 // Get highest indexes of logprobs
-                highest_indexes = getHighestIndexes(global_data[1][num], 3);
+                // highest_indexes = getHighestIndexes(global_data[1][num], 3);
+                highest_indexes = sortedIndices(global_data[1][num]);
+
+                const gradientStart = [82, 183, 136]; // starting color in RGB
+                const gradientEnd = [255, 255, 255]; // ending color in RGB
+                let prev_color = gradientStart.slice(); // initialize with starting color
 
                 // Create span with empty spaces where the current sentence can move
                 for (let i = 0; i < highest_indexes.length; i++) {
                     // If the suggested place is not the same as where the sentence is currently is
-                    if (highest_indexes[i] !== num) {
+                    if (highest_indexes[i] != num) {
                         // Create a span
                         const temp_span = document.createElement("span");
                         temp_span.setAttribute("class", "option");
-                        temp_span.style.backgroundColor = "green";
-                        temp_span.innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;";
+
+                        // Calculate color for current span
+                        let currentColor = prev_color.slice(); // initialize with previous color
+                        const colorChangeFactor = 1.5; // amplify the color change
+                        for (let j = 0; j < 3; j++) {
+                          if (prev_color[j] < gradientEnd[j]) {
+                            currentColor[j] += Math.round(colorChangeFactor * (gradientEnd[j] - prev_color[j]) / (highest_indexes.length - 1));
+                            if (currentColor[j] > gradientEnd[j]) {
+                              currentColor[j] = gradientEnd[j];
+                            }
+                          }
+                        }
+                        prev_color = currentColor.slice(); // set previous color to current color
+
+                         // Apply gradient color to temp_span
+                        const currentColorString = `rgb(${currentColor[0]}, ${currentColor[1]}, ${currentColor[2]})`;
+                        temp_span.style.backgroundColor = currentColorString;
+                        temp_span.innerHTML = " Click to move the sentence here.";
+                        temp_span.style.border = "1px solid black";
                         const option = document.getElementById("span-" + highest_indexes[i].toString()).insertAdjacentElement("afterend", temp_span);
 
                         const excluded_spans = document.querySelectorAll('.option');
@@ -211,6 +246,7 @@
                                 // Change content of empty span
                                 temp_span.addEventListener("click", function() {
                                     temp_span.style.backgroundColor = "white";
+                                    temp_span.style.border = "";
                                     temp_span.innerHTML = highlighting_sen.innerHTML;
                                     temp_span.classList.remove("option");
                                     // Remove initial span of interest
@@ -256,15 +292,37 @@
                 console.log(data[0]);
                 for (let j = 0; j < data.length; j++) {
                     const outline_par = "outline-" + j;
-                    const indices_of_max = findIndicesOfMin(data[j], 3);
+                    // Get top 3
+                    // const indices_of_max = findIndicesOfMin(data[j], 3);
+                    const indices_of_max = sortedIndices(data[j]);
+
+                    
+                    // document.getElementById(outline_par).onmouseover = function () {
+                    //     document.getElementById(outline_par).style.backgroundColor = "#f59b42";
+                    //     for (let i = 0; i < indices_of_max.length; i++) {
+                    //         const elem_id = "span-" + indices_of_max[i];
+                    //         document.getElementById(elem_id).style.backgroundColor = "#f59b42";
+                    //     }
+                    // }
                     document.getElementById(outline_par).onmouseover = function () {
-                        document.getElementById(outline_par).style.backgroundColor = "#f59b42";
+                        document.getElementById(outline_par).style.backgroundColor = "#f09819";
+                        const gradientStart = [240, 152, 25]; // starting color in RGB
+                        const gradientEnd = [255, 255, 255]; // ending color in RGB
+                        let currentColor = gradientStart.slice(); // initialize with starting color
                         for (let i = 0; i < indices_of_max.length; i++) {
-                            const elem_id = "span-" + indices_of_max[i];
-                            document.getElementById(elem_id).style.backgroundColor = "#f59b42";
+                          const elem_id = "span-" + indices_of_max[i];
+                          document.getElementById(elem_id).style.backgroundColor = `rgb(${currentColor[0]}, ${currentColor[1]}, ${currentColor[2]})`;
+                          // calculate the next color in the gradient
+                          for (let j = 0; j < 3; j++) {
+                            if (gradientStart[j] < gradientEnd[j]) {
+                              currentColor[j] += Math.round((gradientEnd[j] - gradientStart[j]) / indices_of_max.length);
+                              if (currentColor[j] > gradientEnd[j]) {
+                                currentColor[j] = gradientEnd[j];
+                              }
+                            }
+                          }
                         }
                     }
-
                     document.getElementById(outline_par).onmouseleave = function () {
                         document.getElementById(outline_par).style.backgroundColor = "white";
                         for (let i = 0; i < indices_of_max.length; i++) {
@@ -273,6 +331,17 @@
                         }
                     }
                 }
+            }
+
+            // Return a list of sorted indices from high to low numbers
+            function sortedIndices(numbers) {
+              // Create an array of indices
+              const indices = numbers.map((_, i) => i);
+
+              // Sort the indices based on the values in the numbers array
+              indices.sort((a, b) => numbers[b] - numbers[a]);
+
+              return indices;
             }
 
             // https://stackoverflow.com/questions/11792158/optimized-javascript-code-to-find-3-largest-element-and-its-indexes-in-array
