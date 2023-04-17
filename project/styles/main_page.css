@@ -3,9 +3,13 @@
     height: 100%;
 }
 
+textarea {
+  line-height:1.5
+}
 
 span {
   cursor: pointer;
+  padding-top: 2px;
 }
 
 .analyze_button_container {

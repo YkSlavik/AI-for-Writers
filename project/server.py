@@ -64,9 +64,7 @@ EMBEDDING_MODEL = "text-embedding-ada-002"
 #     "Next year, I will find a new home miles away. However, my mother will always be by my side."
 # ]
 
-outline_sections = [
-    "First par", "Second par", "Third par", "Fourth par", "Fifth par"
-]
+
 
 # texts = [
 #     "It took me eighteen years to realize what an extraordinary influence my mother has been on my life.",
@@ -92,13 +90,6 @@ outline_sections = [
 #     "However, my mother will always be by my side."
 # ]
 
-texts = [
-    "Meet Jack.",
-    "He's a driven and ambitious individual with a laser-focused mindset on achieving his goals.",
-    "With a keen eye for detail, he excels in problem-solving and is always seeking new challenges to test his abilities.",
-    "Jack is a natural leader, with the ability to inspire and motivate others to perform at their best.",
-    "Despite his demanding schedule, he always makes time for his family and friends, valuing the importance of maintaining strong relationships."
-    ]
 
 
 memory = Memory("./joblib_cache", verbose = 0)
@@ -113,27 +104,27 @@ def get_distances_from_query_list(query_list, texts):
     return distances
 
 # %%
-distances = get_distances_from_query_list(outline_sections, texts)
-distances
+# distances = get_distances_from_query_list(outline_sections, texts)
+# distances
 
 
-question_w_outline = '''
-Write a short essay given this outline:
-• First paragraph.
-• Second paragraph.
-• Third paragraph.
-• Fourth paragraph.
-• Fifth paragraph.
+# question_w_outline = '''
+# Write a short essay given this outline:
+# • First paragraph.
+# • Second paragraph.
+# • Third paragraph.
+# • Fourth paragraph.
+# • Fifth paragraph.
 
-'''
+# '''
 
-sentences = [
-    "Meet Jack.",
-    "He's a driven and ambitious individual with a laser-focused mindset on achieving his goals.",
-    "With a keen eye for detail, he excels in problem-solving and is always seeking new challenges to test his abilities.",
-    "Jack is a natural leader, with the ability to inspire and motivate others to perform at their best.",
-    "Despite his demanding schedule, he always makes time for his family and friends, valuing the importance of maintaining strong relationships."
-    ]
+# sentences = [
+#     "Meet Jack.",
+#     "He's a driven and ambitious individual with a laser-focused mindset on achieving his goals.",
+#     "With a keen eye for detail, he excels in problem-solving and is always seeking new challenges to test his abilities.",
+#     "Jack is a natural leader, with the ability to inspire and motivate others to perform at their best.",
+#     "Despite his demanding schedule, he always makes time for his family and friends, valuing the importance of maintaining strong relationships."
+#     ]
 
 # Function to return a list with combinations of order, where a sentence of interest is in unique positions
 def all_unique_pos(lst, element):
@@ -146,19 +137,19 @@ def all_unique_pos(lst, element):
 
 # combinations = all_unique_pos(sentences, 'It took me eighteen years to realize what an extraordinary influence my mother has been on my life.')
 
-original_text = ' '.join(sentences)
-original_text
+# original_text = ' '.join(sentences)
+# original_text
 
-full_request = question_w_outline + original_text
+# full_request = question_w_outline + original_text
 
 def full_request_template(question, sents):
     return question + ' '.join(sents)
 
-request = full_request_template(question_w_outline, sentences)
-request
+# request = full_request_template(question_w_outline, sentences)
+# request
 
 # Given a combination list where one sentnce is present in all unique places, get the response from openai for that list
-def get_all_responses(options):
+def get_all_responses(options, question_w_outline):
     response = []
     for x in options:
         response.append(get_response(full_request_template(question_w_outline, x)))
@@ -185,13 +176,13 @@ def get_response(full_request):
 
 # For all the possibilities
 # Takes all the sentences, and returns a list of responses
-def all_the_log_probs(sentences):
+def all_the_log_probs(sentences, question_w_outline):
     res = []
     for x in sentences:
-        res.append(get_all_responses(all_unique_pos(sentences, x)))
+        res.append(get_all_responses(all_unique_pos(sentences, x), question_w_outline))
     return res
 
-res = all_the_log_probs(sentences)
+# res = all_the_log_probs(sentences)
 
 def compute_log_probs(question_w_outline, original_text, response):
     start_point = len(question_w_outline)
@@ -234,7 +225,7 @@ def getHighestIndexes(lst, highests):
     return indexes
 
 # Calculate all logprobs and find the indexes of [n] highest numbers 
-def allLogProbs(res):
+def allLogProbs(res, sentences, question_w_outline):
     all_logprobs = []
     for i in range(len(sentences)):
         combinations = all_unique_pos(sentences, sentences[i])
@@ -246,8 +237,8 @@ def allLogProbs(res):
         # highest_indeces = getHighestIndexes(logprobs, 3)
         all_logprobs.append(logprobs)
     return all_logprobs
-all_logprobs = allLogProbs(res)
-print("ALL LOGPROBS: ", all_logprobs)
+# all_logprobs = allLogProbs(res)
+# print("ALL LOGPROBS: ", all_logprobs)
 
 
 def create_prompt(outline_sections):
@@ -275,6 +266,12 @@ def create_prompt(outline_sections):
 
 app = FastAPI() 
 
+# Receive data
+# Define the payload schema
+class TextPayload(BaseModel):
+    outline: str
+    essay: str
+
 origins = [ 
     "http://localhost", 
     "http://localhost:8080", 
@@ -299,23 +296,31 @@ def read_item(item_id: int, q: Optional[str] = None):
     return {"item_id": item_id, "q": q}
 
 @app.get("/item/match")
-async def read_items():
-    data = (distances)
+async def read_items(payload: TextPayload):
+    payload.outline = payload.outline.replace('\n', ' ')
+    # payload.essay = payload.essay.replace('\n', ' ')
+    print("Payload outline: ", payload.outline)
+    print("Payload essay: ", payload.essay)
+    outline_doc = nlp(payload.outline)
+    outline_sections = [sentence.text.strip() for sentence in outline_doc.sents]
+    essay_doc = nlp(payload.essay)
+    essay_sections = [sentence.text.strip() for sentence in essay_doc.sents]
+    data = get_distances_from_query_list(outline_sections, essay_sections)
     return data
 
-@app.get("/item/logprobs")
-async def read_items():
-    data = (all_logprobs)
-    return data
+# @app.get("/item/logprobs")
+# async def read_items():
+#     data = (all_logprobs)
+#     return data
 
-# Receive data
-# Define the payload schema
-class TextPayload(BaseModel):
-    outline: str
-    essay: str
+
 
 @app.post("/analyze")
 async def analyze_post_request(payload: TextPayload):
+    payload.outline = payload.outline.replace('\n', ' ')
+    # payload.essay = payload.essay.replace('\n', ' ')
+    print("Payload outline: ", payload.outline)
+    print("Payload essay: ", payload.essay)
     outline_doc = nlp(payload.outline)
     outline_sections = [sentence.text.strip() for sentence in outline_doc.sents]
     essay_doc = nlp(payload.essay)
@@ -329,17 +334,17 @@ async def analyze_post_request(payload: TextPayload):
     distances = get_distances_from_query_list(outline_sections, essay_sections)
 
     # Create prompt
-    questions_w_outline = create_prompt(outline_sections)
+    question_w_outline = create_prompt(outline_sections)
 
-    original_text = ' '.join(essay_sections)
+    # original_text = ' '.join(essay_sections)
     
-    full_request = question_w_outline + original_text
+    # full_request = questions_w_outline + original_text
 
-    request = full_request_template(question_w_outline, essay_sections)
+    # request = full_request_template(questions_w_outline, essay_sections)
 
-    res = all_the_log_probs(essay_sections)
+    res = all_the_log_probs(essay_sections, question_w_outline)
 
-    all_logprobs = allLogProbs(res)
+    all_logprobs = allLogProbs(res, essay_sections, question_w_outline)
 
     return (distances, all_logprobs)
 
