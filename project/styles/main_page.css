@@ -4,12 +4,12 @@
 }
 
 textarea {
-  line-height:1.5
+  line-height:1.5;
 }
 
 span {
   cursor: pointer;
-  padding-top: 2px;
+  line-height:1.5;
 }
 
 .analyze_button_container {

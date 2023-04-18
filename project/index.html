@@ -259,7 +259,7 @@
                         const excluded_spans = document.querySelectorAll('.option');
 
                         // Detecting mouse click
-                        document.addEventListener('click', function clickHandler(event) {
+                        document.addEventListener('mousedown', function(event) {
                             console.log("mouse detected");
                             // If clicked not on the alternative places
                             if (!Array.from(excluded_spans).includes(event.target)) {
@@ -270,23 +270,25 @@
                                 }
                                 // Unhighlight
                                 highlighting_sen.classList.remove("highlighted");
-                                return;
+
                             }
                             else {
                                 // If suggestion is picked...
                                 // Change content of empty span
-                                temp_span.addEventListener("click", function clickHandler2() {
+                                temp_span.addEventListener("click", function() {
                                     temp_span.style.backgroundColor = "white";
                                     temp_span.style.border = "";
-                                    temp_span.innerHTML = "&nbsp;" + highlighting_sen.innerHTML;
+                                    temp_span.innerHTML = "<br>" + highlighting_sen.innerHTML;
                                     temp_span.classList.remove("option");
-                                    // Remove initial span of interest
-                                    highlighting_sen.remove();
+
                                     const options = document.getElementsByClassName("option");
                                     // Remove remaining spans that were not chosen by the user
                                     while (options.length > 0) {
                                         options[0].remove();
                                     }
+                                    // Remove initial span of interest
+                                    highlighting_sen.remove();
+                                    reRenderHtml();
                                     resetSpanIds();
                                     const essay_div_element = document.getElementById("essay_div_id");
                                     analyze();
@@ -295,10 +297,18 @@
                                 });
                             }
                         });
-                      }
+                    }
                 }
             }
 
+            function reRenderHtml() {
+              const divElement = document.getElementById("essay_div_id");
+              const divContent = divElement.innerHTML;
+              const newContent = divContent.replace(/(<br>\s*){2,}/g, '<br>');
+              divElement.innerHTML = newContent;
+              const currentHtmlContent = divElement.innerHTML;
+              divElement.innerHTML = currentHtmlContent;
+            }
 
             // Find intexes of three lowest integers in a list
             // Top 'num' elements
